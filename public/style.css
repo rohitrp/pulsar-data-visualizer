@@ -1,0 +1,47 @@
+body {
+    width: 100%;
+    font-size: 12px;
+    font-family: 'Open Sans Condensed', "Helvetia", sans-serif;
+}
+
+.header {
+    width: 100%;
+    text-align: center;
+}
+
+.header h1 {
+    font-family: 'Open Sans Condensed', sans-serif;
+}
+
+.container {
+    width: 100%;
+    text-align: center;
+}
+
+.chart-type label {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.bubble {
+    display: inline-block;
+    fill-opacity: 0.5;
+    fill: rgb(31, 119, 180);
+    stroke: rgb(31, 119, 180);
+    stroke-width: 2px;
+    stroke-opacity: .8;
+}
+
+.plot {
+    text-align: center;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #aaa;
+}
+
+rect {
+    fill: #fff;
+}
