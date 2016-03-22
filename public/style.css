@@ -45,3 +45,12 @@ body {
 rect {
     fill: #fff;
 }
+
+.xy-val {
+    padding: 10px;
+}
+.xy-val div,
+.xy-type div {
+    display: inline-block;
+    padding-right: 20px;
+}

@@ -27,7 +27,54 @@
     </div>
   </div>
 
-  <button class="btn btn-default" onclick="onClick()">Show</button>
+  <div class="container">
+    <h3>Data:</h3>
+    <div class="xy-val">
+      X-axis: <div>
+        <select id="plot-x" class="form-control">
+          <option value="Pulsar">Pulsar</option>
+          <option value="TOAs">TOAs</option>
+          <option value="Raw Profiles">Raw Profiles</option>
+          <option value="Period" selected>Period</option>
+          <option value="Period Derivative">Period Derivative</option>
+          <option value="DM">DM</option>
+          <option value="RMS">RMS</option>
+          <option value="Binary">Binary</option>
+        </select>
+      </div>
+      Y-axis: <div>
+        <select id="plot-y" class="form-control">
+          <option value="Pulsar">Pulsar</option>
+          <option value="TOAs">TOAs</option>
+          <option value="Raw Profiles">Raw Profiles</option>
+          <option value="Period">Period</option>
+          <option value="Period Derivative" selected>Period Derivative</option>
+          <option value="DM">DM</option>
+          <option value="RMS">RMS</option>
+          <option value="Binary">Binary</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Type:</h3>
+    <div class="xy-type">
+      X-axis: <div>
+        <select id="type-x" class="form-control">
+          <option value="linear">linear</option>
+          <option value="log">log</option>
+        </select>
+      </div>
+
+      Y-axis: <div>
+        <select id="type-y" class="form-control">
+          <option value="linear">linear</option>
+          <option value="log" selected>log</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-default" onclick="update()">Show</button>
   <div class="plot">
 
   </div>
