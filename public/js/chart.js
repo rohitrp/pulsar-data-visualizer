@@ -6,10 +6,6 @@ chartType.on('click', function() {
   console.log(d3.select(this).attr('value'));
 });
 
-d3.json('data/pulsar_data.json', function (data) {
-  pulsarData = data;
-});
-
 var margin = {top: 20, right: 20, bottom: 40, left: 70};
 var w = 800 - margin.left - margin.right,
   h = 500 - margin.top - margin.bottom;
@@ -19,51 +15,72 @@ var yVal = $('#plot-y').val();
 var xType = $('#type-x').val();
 var yType = $('#type-y').val();
 
-function update() {
+var xScale = d3.scale;
+var yScale = d3.scale;
 
-  var tooltip = d3.select('.plot')
-    .append('div')
-    .style('position', 'absolute')
-    .style('z-index', '10')
-    .style('visibility', 'hidden');
+var xAxis, yAxis;
 
-  var xScale = d3.scale;
+var svg, objects, tooltip;
+
+
+d3.json('data/pulsar_data.json', function (data) {
+  pulsarData = data;
+
+  initializeAxes();
+  update();
+});
+
+function initializeAxes() {
+
+  xScale = d3.scale;
+  yScale = d3.scale;
 
   xScale = (xType === "linear") ? xScale.linear() : xScale.log();
 
   xScale = xScale
-    .domain([0.9 * d3.min(pulsarData, function (d) {
-      return d[xVal];
-    }), 1.1 * d3.max(pulsarData, function(d) {
-      return d[xVal];
-    })])
-    .range([0, w]);
-
-  var yScale = d3.scale;
+  .domain([0.9 * d3.min(pulsarData, function (d) {
+    return d[xVal];
+  }), 1.1 * d3.max(pulsarData, function(d) {
+    return d[xVal];
+  })])
+  .range([0, w]);
 
   yScale = (yType === "linear" ? yScale.linear() : yScale.log());
 
   yScale = yScale
-    .domain([0.9 * d3.min(pulsarData, function(d) {
-      return d[yVal];
-    }), 1.1 * d3.max(pulsarData, function(d) {
-      return d[yVal];
-    })])
-    .range([h, 0]);
+  .domain([0.9 * d3.min(pulsarData, function(d) {
+    return d[yVal];
+  }), 1.1 * d3.max(pulsarData, function(d) {
+    return d[yVal];
+  })])
+  .range([h, 0]);
 
-  var xAxis = d3.svg.axis()
-    .scale(xScale)
-    .orient('bottom')
-    .ticks(10)
-    .tickSize(-h)
-    .tickPadding(10);
+  xAxis = d3.svg.axis()
+  .scale(xScale)
+  .orient('bottom')
+  .ticks(10)
+  .tickSize(-h)
+  .tickPadding(10);
 
-  var yAxis = d3.svg.axis()
-    .scale(yScale)
-    .orient('left')
-    .ticks(10)
-    .tickSize(-w)
-    .tickPadding(10);
+  yAxis = d3.svg.axis()
+  .scale(yScale)
+  .orient('left')
+  .ticks(10)
+  .tickSize(-w)
+  .tickPadding(10);
+}
+
+function update() {
+
+  tooltip = d3.select('.plot')
+    .append('div')
+    .style('position', 'absolute')
+    .style('z-index', '10')
+    .style('visibility', 'hidden')
+    .style('border', '1px solid #888')
+    .style('background-color', 'rgba(100, 100, 100, .7)')
+    .style('color', '#fff')
+    .style('border-radius', '10px');
 
   var zoom = d3.behavior.zoom()
     .x(xScale)
@@ -71,7 +88,7 @@ function update() {
     .scaleExtent([0, 500])
     .on('zoom', zoomed);
 
-  var svg = d3.select('.plot').append('svg')
+  svg = d3.select('.plot').append('svg')
               .attr('width', w + margin.left + margin.right)
               .attr('height', h + margin.top + margin.bottom)
               .append('g')
@@ -92,7 +109,7 @@ function update() {
     .attr('transform', 'translate(0, 0)')
     .call(yAxis);
 
-  var objects = svg.append('svg')
+  objects = svg.append('svg')
     .classed('objects', true)
     .attr('width', w)
     .attr('height', h);
@@ -104,18 +121,7 @@ function update() {
     .attr('class', 'bubble')
     .attr('transform', transform)
     .attr('r', 5)
-    .on('mouseover', function() {
-      return tooltip.style('visibility', 'visible');
-    })
-    .on('mousemove', function(d) {
-      var text = JSON.stringify(d);
-      return tooltip.style('top', (event.pageY-10) + 'px')
-      .style('left', (event.pageX + 10) + 'px')
-      .text(text);
-    })
-    .on('mouseout', function() {
-      return tooltip.style('visibility', 'hidden');
-    });
+    .call(addMouseEvents);
 
   function zoomed() {
     svg.select(".x.axis").call(xAxis);
@@ -130,14 +136,36 @@ function update() {
   }
 }
 
+function addMouseEvents() {
+  this.on('mouseover', function() {
+      return tooltip.style('visibility', 'visible');
+    })
+    .on('mousemove', function(d) {
+      var text = xVal + ": " + d[xVal] +
+        "<br>" + yVal + ": " + d[yVal];
+      return tooltip.style('top', (event.pageY-10) + 'px')
+      .style('left', (event.pageX + 10) + 'px')
+      .html(text);
+    })
+    .on('mouseout', function() {
+      return tooltip.style('visibility', 'hidden');
+    });
+}
+
 d3.selectAll('select').on('change', function() {
   xVal = $('#plot-x').val();
   yVal = $('#plot-y').val();
   xType = $('#type-x').val();
   yType = $('#type-y').val();
-  
+
   $('.plot').remove();
   $('body').append('<div class="plot"></div>');
+
+  initializeAxes();
   update();
 
 });
+
+function r() {
+  d3.selectAll('.bubble').remove();
+}
