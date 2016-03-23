@@ -30,6 +30,7 @@ d3.json('data/pulsar_data.json', function (data) {
 
   initializeAxes();
   update();
+  addLabels();
 });
 
 function initializeAxes() {
@@ -41,42 +42,61 @@ function initializeAxes() {
   xScale = (xType === "linear") ? xScale.linear() : xScale.log();
 
   xScale = xScale
-  .domain([0.9 * d3.min(pulsarData, function (d) {
-    return d[xVal];
-  }), 1.1 * d3.max(pulsarData, function(d) {
-    return d[xVal];
-  })])
-  .range([0, w]);
+    .domain([0.9 * d3.min(pulsarData, function (d) {
+      return d[xVal];
+    }), 1.1 * d3.max(pulsarData, function(d) {
+      return d[xVal];
+    })])
+    .range([0, w]);
 
   yScale = (yType === "linear" ? yScale.linear() : yScale.log());
 
   yScale = yScale
-  .domain([0.9 * d3.min(pulsarData, function(d) {
-    return d[yVal];
-  }), 1.1 * d3.max(pulsarData, function(d) {
-    return d[yVal];
-  })])
-  .range([h, 0]);
+    .domain([0.9 * d3.min(pulsarData, function(d) {
+      return d[yVal];
+    }), 1.1 * d3.max(pulsarData, function(d) {
+      return d[yVal];
+    })])
+    .range([h, 0]);
 
   xAxis = d3.svg.axis()
-  .scale(xScale)
-  .orient('bottom')
-  .ticks(10)
-  .tickSize(-h)
-  .tickPadding(10);
+    .scale(xScale)
+    .orient('bottom')
+    .ticks(10)
+    .tickSize(-h)
+    .tickPadding(10);
 
   yAxis = d3.svg.axis()
-  .scale(yScale)
-  .orient('left')
-  .ticks(10)
-  .tickSize(-w)
-  .tickPadding(10);
+    .scale(yScale)
+    .orient('left')
+    .ticks(10)
+    .tickSize(-w)
+    .tickPadding(10);
 
   zoom = d3.behavior.zoom()
   .x(xScale)
   .y(yScale)
   .scaleExtent([0, 500])
   .on('zoom', zoomed);
+}
+
+function addLabels() {
+  d3.selectAll('.x-label, .y-label').remove();
+
+  svg.append('text')
+    .classed('x-label', true)
+    .attr('x', w/2)
+    .attr('y', h + 40)
+    .style('text-anchor', 'middle')
+    .text(xVal);
+
+  svg.append('text')
+    .classed('y-label', true)
+    .attr('x', -h/2)
+    .attr('y', -60)
+    .style('text-anchor', 'middle')
+    .text(yVal)
+    .attr('transform', 'rotate(-90)');
 }
 
 function update() {
@@ -104,23 +124,10 @@ function update() {
      .attr('width', w)
      .attr('height', h);
 
-  svg.append('text')
-    .attr('x', w/2)
-    .attr('y', h + 40)
-    .style('text-anchor', 'middle')
-    .text(xVal);
-
   svg.append('g')
     .attr('class', 'x axis')
     .attr('transform', 'translate(0, ' + (h) + ')')
     .call(xAxis);
-
-  svg.append('text')
-    .attr('x', -h/2)
-    .attr('y', -60)
-    .style('text-anchor', 'middle')
-    .text(yVal)
-    .attr('transform', 'rotate(-90)');
 
   svg.append('g')
     .attr('class', 'y axis')
@@ -181,8 +188,13 @@ d3.selectAll('select').on('change', function() {
   xType = $('#type-x').val();
   yType = $('#type-y').val();
 
+  svg.select('x-label').text(xVal);
+  svg.select('y-label').text(yVal);
+
   initializeAxes();
 
+  addLabels();
+  
   svg.call(zoom);
 
   objects.selectAll('circle')
