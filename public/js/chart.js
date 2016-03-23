@@ -1,5 +1,7 @@
 var pulsarData = [];
 
+var bubbleColors = ["#D32F2F", "#536DFE", "#F44336", "#C2185B", "#388E3C"];
+
 var chartType = d3.selectAll('input[type="radio"]');
 
 chartType.on('click', function() {
@@ -20,7 +22,7 @@ var yScale = d3.scale;
 
 var xAxis, yAxis;
 
-var svg, objects, tooltip;
+var svg, objects, tooltip, zoom, bubbleColor;
 
 
 d3.json('data/pulsar_data.json', function (data) {
@@ -31,6 +33,7 @@ d3.json('data/pulsar_data.json', function (data) {
 });
 
 function initializeAxes() {
+  bubbleColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
 
   xScale = d3.scale;
   yScale = d3.scale;
@@ -68,6 +71,12 @@ function initializeAxes() {
   .ticks(10)
   .tickSize(-w)
   .tickPadding(10);
+
+  zoom = d3.behavior.zoom()
+  .x(xScale)
+  .y(yScale)
+  .scaleExtent([0, 500])
+  .on('zoom', zoomed);
 }
 
 function update() {
@@ -80,13 +89,9 @@ function update() {
     .style('border', '1px solid #888')
     .style('background-color', 'rgba(100, 100, 100, .7)')
     .style('color', '#fff')
-    .style('border-radius', '10px');
+    .style('border-radius', '10px')
+    .style('padding', '5px');
 
-  var zoom = d3.behavior.zoom()
-    .x(xScale)
-    .y(yScale)
-    .scaleExtent([0, 500])
-    .on('zoom', zoomed);
 
   svg = d3.select('.plot').append('svg')
               .attr('width', w + margin.left + margin.right)
@@ -99,10 +104,23 @@ function update() {
      .attr('width', w)
      .attr('height', h);
 
+  svg.append('text')
+    .attr('x', w/2)
+    .attr('y', h + 40)
+    .style('text-anchor', 'middle')
+    .text(xVal);
+
   svg.append('g')
     .attr('class', 'x axis')
     .attr('transform', 'translate(0, ' + (h) + ')')
     .call(xAxis);
+
+  svg.append('text')
+    .attr('x', -h/2)
+    .attr('y', -60)
+    .style('text-anchor', 'middle')
+    .text(yVal)
+    .attr('transform', 'rotate(-90)');
 
   svg.append('g')
     .attr('class', 'y axis')
@@ -119,21 +137,26 @@ function update() {
     .enter()
     .append('circle')
     .attr('class', 'bubble')
+    .call(addMouseEvents)
+    .transition()
+    .duration(800)
+    .ease('elastic')
     .attr('transform', transform)
     .attr('r', 5)
-    .call(addMouseEvents);
+    .style('fill', bubbleColor)
+    .style('stroke', bubbleColor)
+}
 
-  function zoomed() {
-    svg.select(".x.axis").call(xAxis);
-    svg.select(".y.axis").call(yAxis);
+function zoomed() {
+  svg.select(".x.axis").call(xAxis);
+  svg.select(".y.axis").call(yAxis);
 
-    svg.selectAll('circle')
-      .attr('transform', transform);
-  }
+  svg.selectAll('circle')
+  .attr('transform', transform);
+}
 
-  function transform(d) {
-    return "translate(" + xScale(d[xVal]) + "," + yScale(d[yVal]) + ")";
-  }
+function transform(d) {
+  return "translate(" + xScale(d[xVal]) + "," + yScale(d[yVal]) + ")";
 }
 
 function addMouseEvents() {
@@ -141,7 +164,7 @@ function addMouseEvents() {
       return tooltip.style('visibility', 'visible');
     })
     .on('mousemove', function(d) {
-      var text = xVal + ": " + d[xVal] +
+      var text = "Name: " + d["Pulsar"] + "<br>" + xVal + ": " + d[xVal] +
         "<br>" + yVal + ": " + d[yVal];
       return tooltip.style('top', (event.pageY-10) + 'px')
       .style('left', (event.pageX + 10) + 'px')
@@ -158,14 +181,20 @@ d3.selectAll('select').on('change', function() {
   xType = $('#type-x').val();
   yType = $('#type-y').val();
 
-  $('.plot').remove();
-  $('body').append('<div class="plot"></div>');
-
   initializeAxes();
-  update();
+
+  svg.call(zoom);
+
+  objects.selectAll('circle')
+    .transition()
+    .duration(800)
+    .ease('elastic')
+    .attr('transform', transform)
+    .style('fill', bubbleColor)
+    .style('stroke', bubbleColor);
+
+
+  svg.selectAll('g .x.axis').call(xAxis);
+  svg.selectAll('g .y.axis').call(yAxis);
 
 });
-
-function r() {
-  d3.selectAll('.bubble').remove();
-}

@@ -27,7 +27,6 @@ body {
     display: inline-block;
     fill-opacity: 0.5;
     fill: rgb(31, 119, 180);
-    stroke: rgb(31, 119, 180);
     stroke-width: 2px;
     stroke-opacity: .8;
 }
