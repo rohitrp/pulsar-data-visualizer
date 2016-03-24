@@ -35,12 +35,16 @@ body {
     text-align: center;
 }
 
+.axis text {
+    font-size: 12px;
+}
+
 .axis path,
 .axis line {
     fill: none;
     stroke: #aaa;
+    shape-rendering: crispEdges;
 }
-
 rect {
     fill: #fff;
 }
@@ -58,4 +62,10 @@ rect {
     padding-top: 20px;
     padding-right: 20px;
     display: inline-block;
+}
+
+.bar {
+    display: inline-block;
+    margin-right: 2px;
+    opacity: .6;
 }

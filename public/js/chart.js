@@ -22,7 +22,7 @@ chartType.on('click', function() {
   }
 });
 
-var margin = {top: 20, right: 20, bottom: 40, left: 70};
+var margin = {top: 20, right: 20, bottom: 80, left: 70};
 var w = 800 - margin.left - margin.right,
   h = 500 - margin.top - margin.bottom;
 
@@ -30,6 +30,7 @@ var xVal, yVal, xType, yType;
 
 var xScale = d3.scale;
 var yScale = d3.scale;
+var colorScale = d3.scale;
 
 var xAxis, yAxis;
 
@@ -236,43 +237,86 @@ var barChart = {
   initialize: function () {
     d3.select('.plot').html("");
 
-    xVal = $('.data-label').val();
-    yVal = $('.data').val();
-
+    this.getValues();
+    this.initializeAxes();
     this.update();
   },
+  initializeAxes: function () {
+    xScale = d3.scale.ordinal()
+    .domain(pulsarData.map(function (d) {
+      return d[xVal];
+    }))
+    .rangeRoundBands([0, w], .1);
+
+    yScale = d3.scale.linear()
+    .domain([0.9 * d3.min(pulsarData, function (d) {
+      return d[yVal];
+    }), 1.1 * d3.max(pulsarData, function (d) {
+      return d[yVal];
+    })])
+    .range([h, 0]);
+
+    colorScale = d3.scale.linear()
+      .domain([0, pulsarData.length])
+      .range(['orange', 'purple']);
+
+    xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient('bottom');
+
+    yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient('left');
+  },
   update: function () {
-    var svg = d3.select('.plot').append('svg')
-      .attr('width', w)
-      .attr('height', h);
+    svg = d3.select('.plot').append('svg')
+      .attr('width', w + margin.left + margin.right)
+      .attr('height', h + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    var xScale = d3.scale.linear()
-      .domain([0, pulsarData.length*1.1])
-      .range([0, w]);
+    svg.append('g')
+        .attr('class', 'x axis')
+        .attr('transform', 'translate(0, ' + h + ')')
+        .call(xAxis)
+      .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-65)');
 
-    var yScale = d3.scale.linear()
-      .domain([0.9 * d3.min(pulsarData, function (d) {
-        return d[yVal];
-      }), 1.1 * d3.max(pulsarData, function (d) {
-        return d[yVal];
-      })])
-      .range([0, h]);
+    svg.append('g')
+        .attr('class', 'y axis')
+        .attr('transform', 'translate(0, 0)')
+        .call(yAxis)
+      .append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('y', 6)
+        .attr('dy', '.71em')
+        .style('text-anchor', 'end')
+        .text(yVal);
 
-    svg.selectAll('rect')
+    svg.selectAll('.bar')
       .data(pulsarData)
       .enter()
       .append('rect')
       .classed('bar', true)
-      .attr('x', function (d, i) {
-        return xScale(i);
+      .attr('x', function (d) {
+        return xScale(d[xVal]);
       })
       .attr('y', function (d) {
         return h - yScale(d[yVal]);
       })
-      .attr('width', 10)
+      .attr('width', xScale.rangeBand())
       .attr('height', function (d) {
         return yScale(d[yVal]);
       })
-      .attr('fill', 'teal');
+      .style('fill', function(d, i) {
+        return colorScale(i);
+      });
+  },
+  getValues: function () {
+    xVal = $('.data-label').val();
+    yVal = $('.data').val();
   }
 };
