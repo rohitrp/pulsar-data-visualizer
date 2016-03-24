@@ -3,9 +3,22 @@ var pulsarData = [];
 var bubbleColors = ["#D32F2F", "#536DFE", "#F44336", "#C2185B", "#388E3C"];
 
 var chartType = d3.selectAll('input[type="radio"]');
+var isScatter = true;
 
 chartType.on('click', function() {
-  console.log(d3.select(this).attr('value'));
+
+  isScatter = d3.select(this).attr('value') === 'scatter';
+
+  $('.for-scatter').toggle(isScatter);
+  $('.for-bar').toggle(!isScatter);
+
+  if (isScatter) {
+    scatterPlot.initializeAxes();
+    scatterPlot.update();
+    scatterPlot.addLabels();
+  } else {
+    barChart.initialize();
+  }
 });
 
 var margin = {top: 20, right: 20, bottom: 40, left: 70};
@@ -25,23 +38,26 @@ var xAxis, yAxis;
 var svg, objects, tooltip, zoom, bubbleColor;
 
 
-d3.json('data/pulsar_data.json', function (data) {
+d3.json('data/pulsar_data.json', function (error, data) {
+  if (error) throw error;
+
   pulsarData = data;
 
-  initializeAxes();
-  update();
-  addLabels();
+  scatterPlot.initializeAxes();
+  scatterPlot.update();
+  scatterPlot.addLabels();
 });
 
-function initializeAxes() {
-  bubbleColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
+var scatterPlot = {
+  initializeAxes: function() {
+    bubbleColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
 
-  xScale = d3.scale;
-  yScale = d3.scale;
+    xScale = d3.scale;
+    yScale = d3.scale;
 
-  xScale = (xType === "linear") ? xScale.linear() : xScale.log();
+    xScale = (xType === "linear") ? xScale.linear() : xScale.log();
 
-  xScale = xScale
+    xScale = xScale
     .domain([0.9 * d3.min(pulsarData, function (d) {
       return d[xVal];
     }), 1.1 * d3.max(pulsarData, function(d) {
@@ -49,9 +65,9 @@ function initializeAxes() {
     })])
     .range([0, w]);
 
-  yScale = (yType === "linear" ? yScale.linear() : yScale.log());
+    yScale = (yType === "linear" ? yScale.linear() : yScale.log());
 
-  yScale = yScale
+    yScale = yScale
     .domain([0.9 * d3.min(pulsarData, function(d) {
       return d[yVal];
     }), 1.1 * d3.max(pulsarData, function(d) {
@@ -59,49 +75,46 @@ function initializeAxes() {
     })])
     .range([h, 0]);
 
-  xAxis = d3.svg.axis()
+    xAxis = d3.svg.axis()
     .scale(xScale)
     .orient('bottom')
     .ticks(10)
     .tickSize(-h)
     .tickPadding(10);
 
-  yAxis = d3.svg.axis()
+    yAxis = d3.svg.axis()
     .scale(yScale)
     .orient('left')
     .ticks(10)
     .tickSize(-w)
     .tickPadding(10);
 
-  zoom = d3.behavior.zoom()
-  .x(xScale)
-  .y(yScale)
-  .scaleExtent([0, 500])
-  .on('zoom', zoomed);
-}
+    zoom = d3.behavior.zoom()
+    .x(xScale)
+    .y(yScale)
+    .scaleExtent([0, 500])
+    .on('zoom', this.zoomed);
+  },
+  addLabels: function () {
+    d3.selectAll('.x-label, .y-label').remove();
 
-function addLabels() {
-  d3.selectAll('.x-label, .y-label').remove();
-
-  svg.append('text')
+    svg.append('text')
     .classed('x-label', true)
     .attr('x', w/2)
     .attr('y', h + 40)
     .style('text-anchor', 'middle')
     .text(xVal);
 
-  svg.append('text')
+    svg.append('text')
     .classed('y-label', true)
     .attr('x', -h/2)
     .attr('y', -60)
     .style('text-anchor', 'middle')
     .text(yVal)
     .attr('transform', 'rotate(-90)');
-}
-
-function update() {
-
-  tooltip = d3.select('.plot')
+  },
+  update: function () {
+    tooltip = d3.select('.plot')
     .append('div')
     .style('position', 'absolute')
     .style('z-index', '10')
@@ -113,65 +126,63 @@ function update() {
     .style('padding', '5px');
 
 
-  svg = d3.select('.plot').append('svg')
-              .attr('width', w + margin.left + margin.right)
-              .attr('height', h + margin.top + margin.bottom)
-              .append('g')
-              .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
-              .call(zoom);
+    svg = d3.select('.plot')
+    .append('svg')
+    .attr('width', w + margin.left + margin.right)
+    .attr('height', h + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+    .call(zoom);
 
-  svg.append('rect')
-     .attr('width', w)
-     .attr('height', h);
+    svg.append('rect')
+    .attr('width', w)
+    .attr('height', h);
 
-  svg.append('g')
+    svg.append('g')
     .attr('class', 'x axis')
     .attr('transform', 'translate(0, ' + (h) + ')')
     .call(xAxis);
 
-  svg.append('g')
+    svg.append('g')
     .attr('class', 'y axis')
     .attr('transform', 'translate(0, 0)')
     .call(yAxis);
 
-  objects = svg.append('svg')
+    objects = svg.append('svg')
     .classed('objects', true)
     .attr('width', w)
     .attr('height', h);
 
-  objects.selectAll('circle')
+    objects.selectAll('circle')
     .data(pulsarData)
     .enter()
     .append('circle')
     .attr('class', 'bubble')
-    .call(addMouseEvents)
+    .call(this.addMouseEvents)
     .transition()
     .duration(800)
     .ease('elastic')
-    .attr('transform', transform)
+    .attr('transform', this.transform)
     .attr('r', 5)
     .style('fill', bubbleColor)
     .style('stroke', bubbleColor)
-}
+  },
+  zoomed: function () {
+    svg.select(".x.axis").call(xAxis);
+    svg.select(".y.axis").call(yAxis);
 
-function zoomed() {
-  svg.select(".x.axis").call(xAxis);
-  svg.select(".y.axis").call(yAxis);
-
-  svg.selectAll('circle')
-  .attr('transform', transform);
-}
-
-function transform(d) {
-  return "translate(" + xScale(d[xVal]) + "," + yScale(d[yVal]) + ")";
-}
-
-function addMouseEvents() {
-  this.on('mouseover', function() {
+    svg.selectAll('circle')
+    .attr('transform', scatterPlot.transform);
+  },
+  transform: function (d) {
+    return "translate(" + xScale(d[xVal]) + "," + yScale(d[yVal]) + ")";
+  },
+  addMouseEvents: function () {
+    this.on('mouseover', function() {
       return tooltip.style('visibility', 'visible');
     })
     .on('mousemove', function(d) {
-      var text = "Name: " + d["Pulsar"] + "<br>" + xVal + ": " + d[xVal] +
+      var text = "Pulsar: " + d["Pulsar"] + "<br>" + xVal + ": " + d[xVal] +
         "<br>" + yVal + ": " + d[yVal];
       return tooltip.style('top', (event.pageY-10) + 'px')
       .style('left', (event.pageX + 10) + 'px')
@@ -180,28 +191,30 @@ function addMouseEvents() {
     .on('mouseout', function() {
       return tooltip.style('visibility', 'hidden');
     });
-}
+  }
+};
 
-d3.selectAll('select').on('change', function() {
+
+d3.selectAll('.for-scatter select').on('change', function() {
   xVal = $('#plot-x').val();
   yVal = $('#plot-y').val();
   xType = $('#type-x').val();
   yType = $('#type-y').val();
 
-  svg.select('x-label').text(xVal);
-  svg.select('y-label').text(yVal);
+  svg.select('.x-label').text(xVal);
+  svg.select('.y-label').text(yVal);
 
-  initializeAxes();
+  scatterPlot.initializeAxes();
 
-  addLabels();
-  
+  scatterPlot.addLabels();
+
   svg.call(zoom);
 
   objects.selectAll('circle')
     .transition()
-    .duration(800)
-    .ease('elastic')
-    .attr('transform', transform)
+    .duration(400)
+    .ease('back')
+    .attr('transform', scatterPlot.transform)
     .style('fill', bubbleColor)
     .style('stroke', bubbleColor);
 
@@ -210,3 +223,19 @@ d3.selectAll('select').on('change', function() {
   svg.selectAll('g .y.axis').call(yAxis);
 
 });
+
+
+var barChart = {
+  initialize: function () {
+    d3.select('.plot').html("");
+
+    xVal = $('.data-label').val();
+    yVal = $('.data').val();
+
+    this.update();
+  },
+  update: function () {
+
+    
+  }
+};
