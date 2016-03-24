@@ -13,6 +13,7 @@ chartType.on('click', function() {
   $('.for-bar').toggle(!isScatter);
 
   if (isScatter) {
+    scatterPlot.getValues();
     scatterPlot.initializeAxes();
     scatterPlot.update();
     scatterPlot.addLabels();
@@ -25,10 +26,7 @@ var margin = {top: 20, right: 20, bottom: 40, left: 70};
 var w = 800 - margin.left - margin.right,
   h = 500 - margin.top - margin.bottom;
 
-var xVal = $('#plot-x').val();
-var yVal = $('#plot-y').val();
-var xType = $('#type-x').val();
-var yType = $('#type-y').val();
+var xVal, yVal, xType, yType;
 
 var xScale = d3.scale;
 var yScale = d3.scale;
@@ -42,6 +40,8 @@ d3.json('data/pulsar_data.json', function (error, data) {
   if (error) throw error;
 
   pulsarData = data;
+
+  scatterPlot.getValues();
 
   scatterPlot.initializeAxes();
   scatterPlot.update();
@@ -191,15 +191,18 @@ var scatterPlot = {
     .on('mouseout', function() {
       return tooltip.style('visibility', 'hidden');
     });
+  },
+  getValues: function () {
+    xVal = $('#plot-x').val();
+    yVal = $('#plot-y').val();
+    xType = $('#type-x').val();
+    yType = $('#type-y').val();
   }
 };
 
-
 d3.selectAll('.for-scatter select').on('change', function() {
-  xVal = $('#plot-x').val();
-  yVal = $('#plot-y').val();
-  xType = $('#type-x').val();
-  yType = $('#type-y').val();
+
+  scatterPlot.getValues();
 
   svg.select('.x-label').text(xVal);
   svg.select('.y-label').text(yVal);
@@ -236,6 +239,5 @@ var barChart = {
   },
   update: function () {
 
-    
   }
 };
