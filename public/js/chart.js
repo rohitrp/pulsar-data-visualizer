@@ -7,16 +7,16 @@ var isScatter = true;
 
 chartType.on('click', function() {
 
-  isScatter = d3.select(this).attr('value') === 'scatter';
+  // A check to avoid accumulation of multiple charts if
+  // current selector is clicked multiple times
+  if (isScatter === (d3.select(this).attr('value') === 'scatter')) return;
+  else isScatter = !isScatter;
 
   $('.for-scatter').toggle(isScatter);
   $('.for-bar').toggle(!isScatter);
 
   if (isScatter) {
-    scatterPlot.getValues();
-    scatterPlot.initializeAxes();
-    scatterPlot.update();
-    scatterPlot.addLabels();
+    scatterPlot.initialize();
   } else {
     barChart.initialize();
   }
@@ -41,14 +41,18 @@ d3.json('data/pulsar_data.json', function (error, data) {
 
   pulsarData = data;
 
-  scatterPlot.getValues();
-
-  scatterPlot.initializeAxes();
-  scatterPlot.update();
-  scatterPlot.addLabels();
+  scatterPlot.initialize();
 });
 
 var scatterPlot = {
+  initialize: function () {
+    d3.select('.plot').html("");
+
+    this.getValues();
+    this.initializeAxes();
+    this.update();
+    this.addLabels();
+  },
   initializeAxes: function() {
     bubbleColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
 
@@ -238,6 +242,37 @@ var barChart = {
     this.update();
   },
   update: function () {
+    var svg = d3.select('.plot').append('svg')
+      .attr('width', w)
+      .attr('height', h);
 
+    var xScale = d3.scale.linear()
+      .domain([0, pulsarData.length*1.1])
+      .range([0, w]);
+
+    var yScale = d3.scale.linear()
+      .domain([0.9 * d3.min(pulsarData, function (d) {
+        return d[yVal];
+      }), 1.1 * d3.max(pulsarData, function (d) {
+        return d[yVal];
+      })])
+      .range([0, h]);
+
+    svg.selectAll('rect')
+      .data(pulsarData)
+      .enter()
+      .append('rect')
+      .classed('bar', true)
+      .attr('x', function (d, i) {
+        return xScale(i);
+      })
+      .attr('y', function (d) {
+        return h - yScale(d[yVal]);
+      })
+      .attr('width', 10)
+      .attr('height', function (d) {
+        return yScale(d[yVal]);
+      })
+      .attr('fill', 'teal');
   }
 };
