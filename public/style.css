@@ -18,6 +18,9 @@ body {
     text-align: center;
 }
 
+.chart-type {
+    margin-top: 20px;
+}
 .chart-type label {
     margin-left: 10px;
     margin-right: 10px;
@@ -68,4 +71,12 @@ rect {
     display: inline-block;
     margin-right: 2px;
     opacity: .6;
+}
+
+.pulsars-table {
+    margin-top: 20px;
+    display: none;
+    height: 400px;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }

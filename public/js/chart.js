@@ -43,6 +43,16 @@ d3.json('data/pulsar_data.json', function (error, data) {
   pulsarData = data;
 
   scatterPlot.initialize();
+
+  pulsarData.forEach(function (d, i) {
+    var row = d3.select('#pulsars').select('tbody').append('tr');
+    row.append('td').text(i+1);
+
+    for (var key in d) {
+      row.append('td').text(d[key]);
+    }
+
+  })
 });
 
 var scatterPlot = {
@@ -363,5 +373,17 @@ d3.selectAll('.for-bar select').on('change', function() {
   .attr('dy', '.71em')
   .style('text-anchor', 'end')
   .text(yVal);
+
+});
+
+d3.select('#pulsars button').on('click', function () {
+  if (d3.select(this).html() === "Show Table") {
+    d3.select(this).html("Hide Table");
+    d3.select('.pulsars-table').style('display', 'block');
+  } else {
+    d3.select(this).html("Show Table");
+    d3.select('.pulsars-table').style('display', 'none');
+  }
+
 
 });
