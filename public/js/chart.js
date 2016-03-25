@@ -364,6 +364,4 @@ d3.selectAll('.for-bar select').on('change', function() {
   .style('text-anchor', 'end')
   .text(yVal);
 
-  svg.selectAll('g .x.axis').call(xAxis);
-  svg.selectAll('g .y.axis').call(yAxis);
 });
