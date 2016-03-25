@@ -320,3 +320,50 @@ var barChart = {
     yVal = $('.data').val();
   }
 };
+
+d3.selectAll('.for-bar select').on('change', function() {
+  barChart.getValues();
+
+  barChart.initializeAxes();
+
+  svg.selectAll('.bar')
+    .transition()
+    .duration(500)
+    .ease('back')
+    .attr('x', function(d) {
+      return xScale(d[xVal]);
+    })
+    .attr('y', function (d) {
+      return h - yScale(d[yVal]);
+    })
+  .attr('width', xScale.rangeBand())
+  .attr('height', function (d) {
+    return yScale(d[yVal]);
+  });
+
+  svg.selectAll('.x.axis, .y.axis').remove();
+
+  svg.append('g')
+  .attr('class', 'x axis')
+  .attr('transform', 'translate(0, ' + h + ')')
+  .call(xAxis)
+  .selectAll('text')
+  .style('text-anchor', 'end')
+  .attr('dx', '-.8em')
+  .attr('dy', '.15em')
+  .attr('transform', 'rotate(-65)');
+
+  svg.append('g')
+  .attr('class', 'y axis')
+  .attr('transform', 'translate(0, 0)')
+  .call(yAxis)
+  .append('text')
+  .attr('transform', 'rotate(-90)')
+  .attr('y', 6)
+  .attr('dy', '.71em')
+  .style('text-anchor', 'end')
+  .text(yVal);
+
+  svg.selectAll('g .x.axis').call(xAxis);
+  svg.selectAll('g .y.axis').call(yAxis);
+});
