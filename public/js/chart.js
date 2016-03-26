@@ -22,7 +22,7 @@ chartType.on('click', function() {
 
 var margin = {top: 20, right: 20, bottom: 80, left: 70};
 var w = 800 - margin.left - margin.right,
-  h = 500 - margin.top - margin.bottom;
+  h = 600 - margin.top - margin.bottom;
 
 var xVal, yVal, xType, yType, radiusVal;
 
@@ -444,16 +444,22 @@ var barChart = {
       .attr('x', function (d) {
         return xScale(d[xVal]);
       })
-      .attr('y', function (d) {
-        console.log(d[xVal] + " " + (h-yScale(d[yVal])));
-        return yScale(d[yVal]);
-      })
+      .attr('y', h)
       .attr('width', xScale.rangeBand())
-      .attr('height', function (d) {
-        return h - yScale(d[yVal]);
-      })
+      .attr('height', 0)
       .style('fill', function(d, i) {
         return colorScale(i);
+      });
+
+    svg.selectAll('.bar')
+      .transition()
+      .duration(500)
+      .ease('linear')
+      .attr('y', function (d) {
+        return yScale(d[yVal]);
+      })
+      .attr('height', function (d) {
+        return h - yScale(d[yVal]);
       });
   },
   getValues: function () {
@@ -511,7 +517,7 @@ d3.selectAll('.for-bar select').on('change', function() {
   svg.selectAll('.bar')
     .transition()
     .duration(500)
-    .ease('back')
+    .ease('linear')
     .attr('x', function(d) {
       return xScale(d[xVal]);
     })
@@ -520,32 +526,31 @@ d3.selectAll('.for-bar select').on('change', function() {
     })
   .attr('width', xScale.rangeBand())
   .attr('height', function (d) {
-    console.log(d[xVal] + " "  + (h - yScale(d[yVal])));
     return h - yScale(d[yVal]);
   });
 
   svg.selectAll('.x.axis, .y.axis').remove();
 
   svg.append('g')
-  .attr('class', 'x axis')
-  .attr('transform', 'translate(0, ' + h + ')')
-  .call(xAxis)
-  .selectAll('text')
-  .style('text-anchor', 'end')
-  .attr('dx', '-.8em')
-  .attr('dy', '.15em')
-  .attr('transform', 'rotate(-65)');
+    .attr('class', 'x axis')
+    .attr('transform', 'translate(0, ' + h + ')')
+    .call(xAxis)
+    .selectAll('text')
+    .style('text-anchor', 'end')
+    .attr('dx', '-.8em')
+    .attr('dy', '.15em')
+    .attr('transform', 'rotate(-65)');
 
   svg.append('g')
-  .attr('class', 'y axis')
-  .attr('transform', 'translate(0, 0)')
-  .call(yAxis)
-  .append('text')
-  .attr('transform', 'rotate(-90)')
-  .attr('y', 6)
-  .attr('dy', '.71em')
-  .style('text-anchor', 'end')
-  .text(yVal);
+    .attr('class', 'y axis')
+    .attr('transform', 'translate(0, 0)')
+    .call(yAxis)
+    .append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', 6)
+    .attr('dy', '.71em')
+    .style('text-anchor', 'end')
+    .text(yVal);
 
 });
 
