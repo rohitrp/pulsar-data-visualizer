@@ -43,8 +43,6 @@ d3.json('data/pulsar_data.json', function (error, data) {
 
   pulsarData = data;
 
-  scatterPlot.initialize();
-
   pulsarData.forEach(function (d, i) {
     var row = d3.select('#pulsars').select('tbody').append('tr');
     row.append('td').text(i+1);
@@ -53,7 +51,9 @@ d3.json('data/pulsar_data.json', function (error, data) {
       row.append('td').text(d[key]);
     }
 
-  })
+  });
+
+  scatterPlot.initialize();
 });
 
 var scatterPlot = {
@@ -213,8 +213,10 @@ var scatterPlot = {
       return tooltip.style('visibility', 'visible');
     })
     .on('mousemove', function(d) {
-      var text = "Pulsar: " + d["Pulsar"] + "<br>" + xVal + ": " + d[xVal] +
-        "<br>" + yVal + ": " + d[yVal];
+      var text = "Name | Pulsar: " + d["Pulsar"] + "<br>X-axis | " + xVal + ": " + d[xVal] +
+        "<br>Y-axis | " + yVal + ": " + d[yVal];
+
+      if (radiusVal != "...") text += "<br>Radius | " + radiusVal + ": " + d[radiusVal];
       return tooltip.style('top', (event.pageY-10) + 'px')
       .style('left', (event.pageX + 10) + 'px')
       .html(text);
