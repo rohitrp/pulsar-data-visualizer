@@ -112,6 +112,7 @@ var scatterPlot = {
   initialize: function () {
     d3.select('.plot').html("");
     $('.plot').show();
+    $('#pulsars').show();
 
     this.checkForErrors(this.getValues());
     this.initializeAxes();
@@ -362,7 +363,7 @@ var barChart = {
   initialize: function () {
     d3.select('.plot').html("");
     $('.plot').show();
-
+    $('#pulsars').hide();
 
     this.checkForErrors(this.getValues());
     this.initializeAxes();
