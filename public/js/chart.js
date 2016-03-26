@@ -53,21 +53,57 @@ d3.json('data/pulsar_data.json', function (error, data) {
     }
 
     pulsars.append('div')
-      .classed('pulsar-' + i, true);
+      .classed('pulsar-name', true)
+      .style('cursor', 'pointer');
 
-    var currPulsar = d3.select('.pulsar-' + i);
+    var currPulsar = d3.select('.pulsar-name:last-child');
 
     currPulsar.append('div')
       .classed('pulsar-color', true)
       .style('background-color', colorScale(i % 20))
+      .style('border', '2px solid ' + colorScale(i % 20))
       .style('display', 'inline-block');
 
     currPulsar.append('span')
       .style('display', 'inline-block')
       .text(d['Pulsar']);
 
+    currPulsar.append('span')
+      .classed('pulsar-number', true)
+      .style('display', 'none')
+      .text(i);
 
   });
+
+
+  d3.selectAll('.pulsar-name').on('click', function () {
+    var curr = d3.select(this);
+
+    var pulsarNum = +curr.select('.pulsar-number').text();
+
+    var pulsarColor = curr.select('.pulsar-color');
+
+    pulsarColor.style('background-color', function () {
+        var bubble = d3.select('.pulsar-' + pulsarNum)
+          .transition()
+          .duration(500)
+          .ease('linear');
+
+        if (pulsarColor.style('background-color') !== 'rgb(255, 255, 255)') {
+          bubble.attr('r', function (d) {
+            return radiusScale(d[radiusVal]) + 10;
+          });
+          return "white";
+        } else {
+          bubble.attr('r', function (d) {
+            return radiusScale(d[radiusVal])
+          });
+          return colorScale(pulsarNum % 20);
+        }
+      });
+
+    $('.pulsar-' + pulsarNum).toggle();
+    });
 
   scatterPlot.initialize();
 });
@@ -205,7 +241,9 @@ var scatterPlot = {
     .data(pulsarData)
     .enter()
     .append('circle')
-    .attr('class', 'bubble')
+    .attr('class', function (d, i) {
+      return 'bubble pulsar-' + i;
+    })
     .call(this.addMouseEvents)
     .transition()
     .duration(800)
