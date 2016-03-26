@@ -1,4 +1,5 @@
 var pulsarData = [];
+var snack = document.querySelector('#demo-snackbar-example');
 
 var bubbleColors = ["#D32F2F", "#536DFE", "#F44336", "#C2185B", "#388E3C"];
 
@@ -59,7 +60,7 @@ var scatterPlot = {
   initialize: function () {
     d3.select('.plot').html("");
 
-    this.getValues();
+    this.checkForErrors(this.getValues());
     this.initializeAxes();
     this.update();
     this.addLabels();
@@ -212,12 +213,71 @@ var scatterPlot = {
     yVal = $('#plot-y').val();
     xType = $('#type-x').val();
     yType = $('#type-y').val();
+
+    var res = {
+      x: {},
+      y: {},
+      xy: {}
+    };
+
+    if (xVal === "Pulsar" || xVal === "Binary") {
+      res.x = {
+        error: true,
+        data: "x-axis: " + xVal
+      };
+    }
+
+    if (yVal === "Pulsar" || yVal === "Binary") {
+      res.y = {
+        error: true,
+        data: "y-axis: " + yVal
+      }
+    }
+
+    if (res.x.error && res.y.error) {
+      res.xy = {
+        error: true,
+        data: "x-axis: " + xVal + " & y-axis: " + yVal
+      }
+    }
+
+    return res;
+
+  },
+  checkForErrors: function (res) {
+    var snackBar = document.querySelector('#error-snackbar');
+    var data = {
+      timeout: 2000
+    };
+    var throwError = false;
+
+    if (res.xy.error) {
+      data.message = res.xy.data + " are non-numeric";
+    } else if (res.x.error) {
+      data.message = res.x.data + " is non-numeric";
+    } else {
+      data.message = res.y.data + " is non-numeric";
+    }
+
+    if (res.xy.error || res.x.error || res.y.error) throwError = true;
+
+    if (throwError) {
+      snackBar.MaterialSnackbar.showSnackbar(data);
+      $('.plot').hide();
+
+      throw new Error('Data is not numeric');
+    } else {
+      $('.plot').show();
+    }
+
   }
 };
 
 d3.selectAll('.for-scatter select').on('change', function() {
 
-  scatterPlot.getValues();
+  var res = scatterPlot.getValues();
+
+  scatterPlot.checkForErrors(res);
 
   svg.select('.x-label').text(xVal);
   svg.select('.y-label').text(yVal);
