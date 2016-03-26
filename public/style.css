@@ -30,8 +30,6 @@ body {
     display: inline-block;
     fill-opacity: 0.5;
     fill: rgb(31, 119, 180);
-    stroke-width: 2px;
-    stroke-opacity: .8;
 }
 
 .plot {
@@ -83,4 +81,20 @@ rect {
 
 .for-scatter .radius {
     display: inline-block;
+}
+
+#pulsars div {
+    display: inline-block;
+    width: 110px;
+    text-align: left;
+    margin: 5px;
+    float: left;
+}
+
+#pulsars div .pulsar-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    display: inline-block;
+    opacity: 0.5;
 }

@@ -1,7 +1,5 @@
 var pulsarData = [];
 
-var bubbleColors = ["#D32F2F", "#536DFE", "#F44336", "#C2185B", "#388E3C"];
-
 var chartType = d3.selectAll('input[type="radio"]');
 var isScatter = true;
 
@@ -30,12 +28,12 @@ var xVal, yVal, xType, yType, radiusVal;
 
 var xScale = d3.scale;
 var yScale = d3.scale;
-var colorScale = d3.scale;
+var colorScale = d3.scale.category20();
 var radiusScale = d3.scale;
 
 var xAxis, yAxis;
 
-var svg, objects, tooltip, zoom, bubbleColor;
+var svg, objects, tooltip, zoom;
 
 
 d3.json('data/pulsar_data.json', function (error, data) {
@@ -43,13 +41,31 @@ d3.json('data/pulsar_data.json', function (error, data) {
 
   pulsarData = data;
 
+  var tBody = d3.select('#pulsars-table').select('tbody');
+  var pulsars = d3.select('#pulsars');
+
   pulsarData.forEach(function (d, i) {
-    var row = d3.select('#pulsars').select('tbody').append('tr');
+    var row = tBody.append('tr');
     row.append('td').text(i+1);
 
     for (var key in d) {
       row.append('td').text(d[key]);
     }
+
+    pulsars.append('div')
+      .classed('pulsar-' + i, true);
+
+    var currPulsar = d3.select('.pulsar-' + i);
+
+    currPulsar.append('div')
+      .classed('pulsar-color', true)
+      .style('background-color', colorScale(i % 20))
+      .style('display', 'inline-block');
+
+    currPulsar.append('span')
+      .style('display', 'inline-block')
+      .text(d['Pulsar']);
+
 
   });
 
@@ -67,10 +83,9 @@ var scatterPlot = {
     this.addLabels();
   },
   initializeAxes: function() {
-    bubbleColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
-
     xScale = d3.scale;
     yScale = d3.scale;
+    colorScale = d3.scale;
 
     xScale = (xType === "linear") ? xScale.linear() : xScale.log();
 
@@ -124,7 +139,9 @@ var scatterPlot = {
         return 5;
       };
     }
-    else radiusScale.range([2, 15]);
+    else radiusScale.range([5, 30]);
+
+    colorScale = colorScale.category20();
   },
   addLabels: function () {
     d3.selectAll('.x-label, .y-label').remove();
@@ -195,8 +212,9 @@ var scatterPlot = {
     .ease('elastic')
     .attr('transform', this.transform)
     .attr('r', 5)
-    .style('fill', bubbleColor)
-    .style('stroke', bubbleColor)
+    .style('fill', function (d, i) {
+      return colorScale(i % 20);
+    });
   },
   zoomed: function () {
     svg.select(".x.axis").call(xAxis);
@@ -291,8 +309,9 @@ d3.selectAll('.for-scatter select').on('change', function() {
     .attr('r', function(d) {
       return radiusScale(d[radiusVal]);
     })
-    .style('fill', bubbleColor)
-    .style('stroke', bubbleColor);
+    .style('fill', function (d, i) {
+      return colorScale(i % 20);
+    });
 
 
   svg.selectAll('g .x.axis').call(xAxis);
@@ -462,7 +481,7 @@ d3.selectAll('.for-bar select').on('change', function() {
 
 });
 
-d3.select('#pulsars button').on('click', function () {
+d3.select('#pulsars-table button').on('click', function () {
   if (d3.select(this).html() === "Show Table") {
     d3.select(this).html("Hide Table");
     d3.select('.pulsars-table').style('display', 'block');
@@ -470,6 +489,4 @@ d3.select('#pulsars button').on('click', function () {
     d3.select(this).html("Show Table");
     d3.select('.pulsars-table').style('display', 'none');
   }
-
-
 });
