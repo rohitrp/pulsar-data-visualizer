@@ -445,11 +445,12 @@ var barChart = {
         return xScale(d[xVal]);
       })
       .attr('y', function (d) {
-        return h - yScale(d[yVal]);
+        console.log(d[xVal] + " " + (h-yScale(d[yVal])));
+        return yScale(d[yVal]);
       })
       .attr('width', xScale.rangeBand())
       .attr('height', function (d) {
-        return yScale(d[yVal]);
+        return h - yScale(d[yVal]);
       })
       .style('fill', function(d, i) {
         return colorScale(i);
@@ -515,11 +516,12 @@ d3.selectAll('.for-bar select').on('change', function() {
       return xScale(d[xVal]);
     })
     .attr('y', function (d) {
-      return h - yScale(d[yVal]);
+      return yScale(d[yVal]);
     })
   .attr('width', xScale.rangeBand())
   .attr('height', function (d) {
-    return yScale(d[yVal]);
+    console.log(d[xVal] + " "  + (h - yScale(d[yVal])));
+    return h - yScale(d[yVal]);
   });
 
   svg.selectAll('.x.axis, .y.axis').remove();
