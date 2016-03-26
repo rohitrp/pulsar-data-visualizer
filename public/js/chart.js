@@ -397,6 +397,17 @@ var barChart = {
       .orient('left');
   },
   update: function () {
+    tooltip = d3.select('.plot')
+      .append('div')
+      .style('position', 'absolute')
+      .style('z-index', '10')
+      .style('visibility', 'hidden')
+      .style('border', '1px solid #888')
+      .style('background-color', 'rgba(100, 100, 100, .7)')
+      .style('color', '#fff')
+      .style('border-radius', '10px')
+      .style('padding', '5px');
+
     svg = d3.select('.plot').append('svg')
       .attr('width', w + margin.left + margin.right)
       .attr('height', h + margin.top + margin.bottom)
@@ -429,6 +440,7 @@ var barChart = {
       .enter()
       .append('rect')
       .classed('bar', true)
+      .call(this.addMouseEvents)
       .attr('x', function (d) {
         return xScale(d[xVal]);
       })
@@ -468,9 +480,24 @@ var barChart = {
 
       console.error(data.message);
     } else {
-      console.log('here');
       $('.plot').show();
     }
+  },
+  addMouseEvents: function () {
+    this.on('mouseover', function() {
+      return tooltip.style('visibility', 'visible');
+    })
+    .on('mousemove', function(d) {
+      var text = "Name | Pulsar: " + d["Pulsar"] + "<br>Data | " + yVal + ": " + d[yVal] +
+        "<br>Label | " + xVal + ": " + d[xVal];
+
+      return tooltip.style('top', (event.pageY-10) + 'px')
+      .style('left', (event.pageX + 10) + 'px')
+      .html(text);
+    })
+    .on('mouseout', function() {
+      return tooltip.style('visibility', 'hidden');
+    });
   }
 };
 
