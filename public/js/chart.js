@@ -26,11 +26,12 @@ var margin = {top: 20, right: 20, bottom: 80, left: 70};
 var w = 800 - margin.left - margin.right,
   h = 500 - margin.top - margin.bottom;
 
-var xVal, yVal, xType, yType;
+var xVal, yVal, xType, yType, radiusVal;
 
 var xScale = d3.scale;
 var yScale = d3.scale;
 var colorScale = d3.scale;
+var radiusScale = d3.scale;
 
 var xAxis, yAxis;
 
@@ -110,6 +111,20 @@ var scatterPlot = {
     .y(yScale)
     .scaleExtent([0, 500])
     .on('zoom', this.zoomed);
+
+    radiusScale = d3.scale.linear()
+      .domain([d3.min(pulsarData, function(d) {
+        return d[radiusVal];
+      }), d3.max(pulsarData, function (d) {
+        return d[radiusVal];
+      })]);
+
+    if (radiusVal === '...') {
+      radiusScale = function () {
+        return 5;
+      };
+    }
+    else radiusScale.range([2, 15]);
   },
   addLabels: function () {
     d3.selectAll('.x-label, .y-label').remove();
@@ -213,32 +228,20 @@ var scatterPlot = {
     yVal = $('#plot-y').val();
     xType = $('#type-x').val();
     yType = $('#type-y').val();
+    radiusVal = $('#radius').val();
 
-    var res = {
-      x: {},
-      y: {},
-      xy: {}
-    };
+    var res = [];
 
     if (xVal === "Pulsar" || xVal === "Binary") {
-      res.x = {
-        error: true,
-        data: "x-axis: " + xVal
-      };
+      res.push("x-axis: " + xVal);
     }
 
     if (yVal === "Pulsar" || yVal === "Binary") {
-      res.y = {
-        error: true,
-        data: "y-axis: " + yVal
-      }
+      res.push("y-axis: " + yVal);
     }
 
-    if (res.x.error && res.y.error) {
-      res.xy = {
-        error: true,
-        data: "x-axis: " + xVal + " & y-axis: " + yVal
-      }
+    if (radiusVal === "Pulsar" || radiusVal === "Binary") {
+      res.push("Radius: " + radiusVal);
     }
 
     return res;
@@ -247,28 +250,17 @@ var scatterPlot = {
   checkForErrors: function (res) {
     var snackBar = document.querySelector('#error-snackbar');
     var data = {
+      message: "Non-numeric data - " + res.join(" & "),
       timeout: 2000
     };
-    var throwError = false;
 
-    if (res.xy.error) {
-      data.message = res.xy.data + " are non-numeric";
-    } else if (res.x.error) {
-      data.message = res.x.data + " is non-numeric";
-    } else {
-      data.message = res.y.data + " is non-numeric";
-    }
-
-    if (res.xy.error || res.x.error || res.y.error) throwError = true;
-
-    if (throwError) {
+    if (res.length !== 0) {
       snackBar.MaterialSnackbar.showSnackbar(data);
       $('.plot').hide();
 
-      console.error('Data is not numeric');
+      console.error(data.message);
     } else {
       $('.plot').show();
-
     }
 
   }
@@ -294,6 +286,9 @@ d3.selectAll('.for-scatter select').on('change', function() {
     .duration(400)
     .ease('back')
     .attr('transform', scatterPlot.transform)
+    .attr('r', function(d) {
+      return radiusScale(d[radiusVal]);
+    })
     .style('fill', bubbleColor)
     .style('stroke', bubbleColor);
 
@@ -392,15 +387,10 @@ var barChart = {
     xVal = $('.data-label').val();
     yVal = $('.data').val();
 
-    var res = {
-      y: {}
-    };
+    var res = [];
 
     if (yVal === "Pulsar" || yVal == "Binary") {
-      res.y = {
-        error: true,
-        data: "y-axis: " + yVal
-      }
+      res.push("y-axis: " + yVal);
     }
 
     return res;
@@ -408,11 +398,11 @@ var barChart = {
   checkForErrors: function (res) {
     var snackBar = document.querySelector('#error-snackbar');
     var data = {
+      message: "Non-numberic data - " + res.join(),
       timeout: 2000
     };
 
-    if (res.y.error) {
-      data.message = res.y.data + " is non-numeric";
+    if (res.length !== 0) {
       snackBar.MaterialSnackbar.showSnackbar(data);
       $('.plot').hide();
 

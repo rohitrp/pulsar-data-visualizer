@@ -80,3 +80,7 @@ rect {
     overflow-y: scroll;
     overflow-x: hidden;
 }
+
+.for-scatter .radius {
+    display: inline-block;
+}
