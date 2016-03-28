@@ -250,7 +250,9 @@ var scatterPlot = {
     .duration(800)
     .ease('elastic')
     .attr('transform', this.transform)
-    .attr('r', 5)
+    .attr('r', function (d) {
+      return radiusScale(d[radiusVal]);
+    })
     .style('fill', function (d, i) {
       return colorScale(i % 20);
     });
