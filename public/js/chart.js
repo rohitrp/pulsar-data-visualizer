@@ -565,3 +565,54 @@ d3.select('#pulsars-table button').on('click', function () {
     d3.select('.pulsars-table').style('display', 'none');
   }
 });
+
+function simpleLinearRegression(x, y) {
+  var x_squared = arrMul(x, x);
+  var xy = arrMul(x, y);
+
+  var slope = (d3.sum(xy) - d3.sum(y) * d3.mean(x)) / (d3.sum(x_squared) - d3.sum(x) * d3.mean(x));
+  var intercept = d3.mean(arrSub(y, arrMulConst(slope, x)));
+
+
+  return [intercept, slope];
+}
+
+function arrMul(x, y) {
+  var res = [];
+
+  for (var i = 0; i < x.length; i++) {
+    res.push(x[i] * y[i]);
+  }
+
+  return res;
+}
+
+function arrMulConst(c, x) {
+  var res = [];
+
+  for (var i = 0; i < x.length; i++) {
+    res.push(c * x[i]);
+  }
+
+  return res;
+}
+
+function arrSub(x, y) {
+  var res = [];
+
+  for (var i = 0; i < x.length; i++) {
+    res.push(x[i] - y[i]);
+  }
+
+  return res;
+}
+
+function plotLinearRegression() {
+  var w = simpleLinearRegression(
+    pulsarData.map(function (d) {
+      return d[xVal];
+    }), pulsarData.map(function (d) {
+      return d[yVal];
+    }));
+
+}
