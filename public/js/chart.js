@@ -1,4 +1,5 @@
 var pulsarData = [];
+var line;
 
 var chartType = d3.selectAll('input[type="radio"]');
 var isScatter = true;
@@ -33,8 +34,18 @@ var radiusScale = d3.scale;
 
 var xAxis, yAxis;
 
-var svg, objects, tooltip, zoom;
+var svg, objects, zoom;
 
+var tooltip = d3.select('body')
+  .append('div')
+  .style('position', 'absolute')
+  .style('z-index', '10')
+  .style('visibility', 'hidden')
+  .style('border', '1px solid #888')
+  .style('background-color', 'rgba(100, 100, 100, .7)')
+  .style('color', '#fff')
+  .style('border-radius', '10px')
+  .style('padding', '5px');
 
 d3.json('data/pulsar_data.json', function (error, data) {
   if (error) throw error;
@@ -103,6 +114,7 @@ d3.json('data/pulsar_data.json', function (error, data) {
       });
 
     $('.pulsar-' + pulsarNum).toggle();
+    plotLinearRegression();
     });
 
   scatterPlot.initialize();
@@ -118,6 +130,8 @@ var scatterPlot = {
     this.initializeAxes();
     this.update();
     this.addLabels();
+
+    plotLinearRegression();
   },
   initializeAxes: function() {
     xScale = d3.scale;
@@ -199,17 +213,6 @@ var scatterPlot = {
     .attr('transform', 'rotate(-90)');
   },
   update: function () {
-    tooltip = d3.select('.plot')
-    .append('div')
-    .style('position', 'absolute')
-    .style('z-index', '10')
-    .style('visibility', 'hidden')
-    .style('border', '1px solid #888')
-    .style('background-color', 'rgba(100, 100, 100, .7)')
-    .style('color', '#fff')
-    .style('border-radius', '10px')
-    .style('padding', '5px');
-
 
     svg = d3.select('.plot')
     .append('svg')
@@ -262,7 +265,11 @@ var scatterPlot = {
     svg.select(".y.axis").call(yAxis);
 
     svg.selectAll('circle')
-    .attr('transform', scatterPlot.transform);
+      .attr('transform', scatterPlot.transform);
+
+    svg.select('.line')
+      .attr('class', 'line')
+      .attr('d', line);
   },
   transform: function (d) {
     return "translate(" + xScale(d[xVal]) + "," + yScale(d[yVal]) + ")";
@@ -358,6 +365,8 @@ d3.selectAll('.for-scatter select').on('change', function() {
   svg.selectAll('g .x.axis').call(xAxis);
   svg.selectAll('g .y.axis').call(yAxis);
 
+  plotLinearRegression();
+
 });
 
 
@@ -399,17 +408,6 @@ var barChart = {
       .orient('left');
   },
   update: function () {
-    tooltip = d3.select('.plot')
-      .append('div')
-      .style('position', 'absolute')
-      .style('z-index', '10')
-      .style('visibility', 'hidden')
-      .style('border', '1px solid #888')
-      .style('background-color', 'rgba(100, 100, 100, .7)')
-      .style('color', '#fff')
-      .style('border-radius', '10px')
-      .style('padding', '5px');
-
     svg = d3.select('.plot').append('svg')
       .attr('width', w + margin.left + margin.right)
       .attr('height', h + margin.top + margin.bottom)
@@ -608,11 +606,66 @@ function arrSub(x, y) {
 }
 
 function plotLinearRegression() {
-  var w = simpleLinearRegression(
-    pulsarData.map(function (d) {
+  var visiblePulsars = pulsarData.filter(function (d, i) {
+    return $('.pulsar-' + i).css('display') !== 'none';
+  });
+
+  var coefficients = simpleLinearRegression(
+    visiblePulsars.map(function (d) {
       return d[xVal];
-    }), pulsarData.map(function (d) {
+    }), visiblePulsars.map(function (d) {
       return d[yVal];
     }));
 
+  // console.log(coefficients);
+
+  var data = visiblePulsars.map(function(d) {
+    return d[xVal];
+  })
+  .sort(function (a, b) {
+    return a - b;
+  });
+
+  d3.select('g.regression-plot').remove();
+
+  line = d3.svg.line()
+    .x(function (d) {
+      return xScale(d);
+    })
+    .y(function (d) {
+      return yScale(coefficients[0] + coefficients[1] * d);
+    })
+    .interpolate('basis');
+
+  var regressionPlot = svg.append('g').attr('class', 'regression-plot');
+
+  var clip = regressionPlot.append('svg:clipPath')
+    .attr('id', 'clip')
+    .append('svg:rect')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('width', w)
+    .attr('height', h);
+
+  var chartBody = regressionPlot.append('g')
+    .attr('clip-path', 'url(#clip)');
+
+  chartBody.append('svg:path')
+    .datum(data)
+    .attr('class', 'line')
+    .attr('d', line)
+    .on('mouseover', function () {
+      return tooltip.style('visibility', 'visible');
+    })
+    .on('mousemove', function () {
+      var text = "Intercept: " + coefficients[0] + "<br>" +
+          "Slope: " + coefficients[1];
+
+      return tooltip.style('top', (event.pageY-10) + 'px')
+      .style('left', (event.pageX + 10) + 'px')
+      .html(text);
+    })
+    .on('mouseout', function() {
+      return tooltip.style('visibility', 'hidden');
+    });
 }
