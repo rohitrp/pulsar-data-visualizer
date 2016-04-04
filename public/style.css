@@ -50,10 +50,10 @@ rect {
     fill: #fff;
 }
 
-.xy-val {
+.scatter-options {
     padding: 10px;
 }
-.xy-val div,
+.scatter-options div,
 .xy-type div {
     display: inline-block;
     padding-right: 20px;
@@ -115,4 +115,19 @@ rect {
 
 h3 {
     font-family: 'Open Sans Condensed', sans-serif !important;
+}
+
+.scatter-data-label {
+    width: 100px;
+    text-align: right;
+    margin-top: 20px;
+}
+
+.scatter-data-options {
+    width: 200px;
+}
+
+.linear-model {
+    width: 200px;
+    margin: 0 auto;
 }
