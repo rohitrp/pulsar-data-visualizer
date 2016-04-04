@@ -676,4 +676,18 @@ function plotLinearRegression() {
     .on('mouseout', function() {
       return tooltip.style('visibility', 'hidden');
     });
+
+  if ($('#linear-model').is(':checked')) {
+    $('.regression-plot').show();
+  } else {
+    $('.regression-plot').hide();
+  }
 }
+
+d3.select('#linear-model').on('click', function () {
+  if ($(this).is(':checked')) {
+    $('.regression-plot').show();
+  } else {
+    $('.regression-plot').hide();
+  }
+});

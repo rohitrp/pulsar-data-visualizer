@@ -112,3 +112,7 @@ rect {
     stroke: steelblue;
     stroke-width: 1.5px;
 }
+
+h3 {
+    font-family: 'Open Sans Condensed', sans-serif !important;
+}
