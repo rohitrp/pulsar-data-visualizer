@@ -53,7 +53,6 @@ d3.json('data/pulsar_data.json', function (error, data) {
   pulsarData = data;
 
   var tBody = d3.select('#pulsars-table').select('tbody');
-  var pulsars = d3.select('#pulsars');
 
   pulsarData.forEach(function (d, i) {
     var row = tBody.append('tr');
@@ -62,60 +61,7 @@ d3.json('data/pulsar_data.json', function (error, data) {
     for (var key in d) {
       row.append('td').text(d[key]);
     }
-
-    pulsars.append('div')
-      .classed('pulsar-name', true)
-      .style('cursor', 'pointer');
-
-    var currPulsar = d3.select('.pulsar-name:last-child');
-
-    currPulsar.append('div')
-      .classed('pulsar-color', true)
-      .style('background-color', colorScale(i % 20))
-      .style('border', '2px solid ' + colorScale(i % 20))
-      .style('display', 'inline-block');
-
-    currPulsar.append('span')
-      .style('display', 'inline-block')
-      .text(d['Pulsar']);
-
-    currPulsar.append('span')
-      .classed('pulsar-number', true)
-      .style('display', 'none')
-      .text(i);
-
   });
-
-
-  d3.selectAll('.pulsar-name').on('click', function () {
-    var curr = d3.select(this);
-
-    var pulsarNum = +curr.select('.pulsar-number').text();
-
-    var pulsarColor = curr.select('.pulsar-color');
-
-    pulsarColor.style('background-color', function () {
-        var bubble = d3.select('.pulsar-' + pulsarNum)
-          .transition()
-          .duration(500)
-          .ease('linear');
-
-        if (pulsarColor.style('background-color') !== 'rgb(255, 255, 255)') {
-          bubble.attr('r', function (d) {
-            return radiusScale(d[radiusVal]) + 10;
-          });
-          return "white";
-        } else {
-          bubble.attr('r', function (d) {
-            return radiusScale(d[radiusVal])
-          });
-          return colorScale(pulsarNum % 20);
-        }
-      });
-
-    $('.pulsar-' + pulsarNum).toggle();
-    plotLinearRegression();
-    });
 
   scatterPlot.initialize();
 });
@@ -130,8 +76,41 @@ var scatterPlot = {
     this.initializeAxes();
     this.update();
     this.addLabels();
+    this.addPulsarsList();
+    this.addPulsarsListListener();
 
     plotLinearRegression();
+  },
+  addPulsarsListListener: function () {
+    d3.selectAll('.pulsar-name').on('click', function () {
+      var curr = d3.select(this);
+
+      var pulsarNum = +curr.select('.pulsar-number').text();
+
+      var pulsarColor = curr.select('.pulsar-color');
+
+      pulsarColor.style('background-color', function () {
+        var bubble = d3.select('.pulsar-' + pulsarNum)
+        .transition()
+        .duration(500)
+        .ease('linear');
+
+        if (pulsarColor.style('background-color') !== 'rgb(255, 255, 255)') {
+          bubble.attr('r', function (d) {
+            return radiusScale(d[radiusVal]) + 10;
+          });
+          return "white";
+        } else {
+          bubble.attr('r', function (d) {
+            return radiusScale(d[radiusVal])
+          });
+          return colorScale(pulsarNum % 20);
+        }
+      });
+
+      $('.pulsar-' + pulsarNum).toggle();
+      plotLinearRegression();
+    });
   },
   initializeAxes: function() {
     xScale = d3.scale;
@@ -331,6 +310,34 @@ var scatterPlot = {
       $('.plot').show();
     }
 
+  },
+  addPulsarsList: function () {
+    pulsarData.forEach(function (d, i) {
+
+      var pulsars = d3.select('#pulsars');
+
+      pulsars.append('div')
+      .classed('pulsar-name', true)
+      .style('cursor', 'pointer');
+
+      var currPulsar = d3.select('.pulsar-name:last-child');
+
+      currPulsar.append('div')
+      .classed('pulsar-color', true)
+      .style('background-color', colorScale(i % 20))
+      .style('border', '2px solid ' + colorScale(i % 20))
+      .style('display', 'inline-block');
+
+      currPulsar.append('span')
+      .style('display', 'inline-block')
+      .text(d['Pulsar']);
+
+      currPulsar.append('span')
+      .classed('pulsar-number', true)
+      .style('display', 'none')
+      .text(i);
+
+    });
   }
 };
 
@@ -374,7 +381,8 @@ var barChart = {
   initialize: function () {
     d3.select('.plot').html("");
     $('.plot').show();
-    $('#pulsars').hide();
+
+    d3.select('#pulsars').selectAll('*').remove();
 
     this.checkForErrors(this.getValues());
     this.initializeAxes();
