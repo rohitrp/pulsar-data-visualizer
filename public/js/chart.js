@@ -262,8 +262,8 @@ var scatterPlot = {
         "<br>Y-axis | " + yVal + ": " + d[yVal];
 
       if (radiusVal != "...") text += "<br>Radius | " + radiusVal + ": " + d[radiusVal];
-      return tooltip.style('top', (event.pageY-10) + 'px')
-      .style('left', (event.pageX + 10) + 'px')
+      return tooltip.style('top', (d3.event.pageY-10) + 'px')
+      .style('left', (d3.event.pageX + 10) + 'px')
       .html(text);
     })
     .on('mouseout', function() {
@@ -506,8 +506,8 @@ var barChart = {
       var text = "Name | Pulsar: " + d["Pulsar"] + "<br>Data | " + yVal + ": " + d[yVal] +
         "<br>Label | " + xVal + ": " + d[xVal];
 
-      return tooltip.style('top', (event.pageY-10) + 'px')
-      .style('left', (event.pageX + 10) + 'px')
+      return tooltip.style('top', (d3.event.pageY-10) + 'px')
+      .style('left', (d3.event.pageX + 10) + 'px')
       .html(text);
     })
     .on('mouseout', function() {
@@ -669,8 +669,8 @@ function plotLinearRegression() {
       var text = "Intercept: " + coefficients[0] + "<br>" +
           "Slope: " + coefficients[1];
 
-      return tooltip.style('top', (event.pageY-10) + 'px')
-      .style('left', (event.pageX + 10) + 'px')
+      return tooltip.style('top', (d3.event.pageY-10) + 'px')
+      .style('left', (d3.event.pageX + 10) + 'px')
       .html(text);
     })
     .on('mouseout', function() {
